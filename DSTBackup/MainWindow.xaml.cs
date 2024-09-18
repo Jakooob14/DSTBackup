@@ -38,7 +38,7 @@ public partial class MainWindow : Window
         }
     }
 
-    readonly int _checkTime = 1;
+    readonly int _checkTime = 30;
     
     List<World?> _worlds = new List<World?>();
     World? _worldToBackup = null;
@@ -148,8 +148,6 @@ public partial class MainWindow : Window
         FileInfo masterInfo = new FileInfo(_worldToBackup.Path + @"\Master.zip");
         FileInfo cavesInfo = new FileInfo(_worldToBackup.Path + @"\Caves.zip");
 
-        Console.WriteLine(_worldToBackup.Path);
-        return;
         if (masterInfo.LastWriteTime > _oldLastModified)
         {
             _oldLastModified = masterInfo.LastWriteTime;
