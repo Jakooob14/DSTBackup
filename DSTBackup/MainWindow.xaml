@@ -1,0 +1,19 @@
+﻿<Window x:Class="DSTBackup.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DSTBackup"
+        mc:Ignorable="d"
+        Title="Don't Starve Together Backup" Height="250" Width="400" ResizeMode="CanMinimize">
+    <Grid>
+        <ComboBox x:Name="WorldInput" HorizontalAlignment="Left" Margin="57,32,0,0" VerticalAlignment="Top" Width="309" Height="20"/>
+        <TextBox x:Name="PathInput" HorizontalAlignment="Left" Margin="109,69,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="232" Height="20"/>
+        <Button x:Name="BrowseButton" Content="..." HorizontalAlignment="Left" Margin="346,69,0,0" VerticalAlignment="Top" IsCancel="True" Width="26" Click="BrowseButton_Click" Height="20"/>
+        <Button x:Name="StartBackupButton" Content="Start Backup" HorizontalAlignment="Center" Margin="0,142,0,0" VerticalAlignment="Top" Click="StartBackupButton_Click" Height="31" Width="94"/>
+        <Label Content="World" HorizontalAlignment="Left" Margin="10,28,0,0" VerticalAlignment="Top"/>
+        <Label Content="Backup Location" HorizontalAlignment="Left" Margin="10,64,0,0" VerticalAlignment="Top"/>
+        <Label Content="Max Backups" HorizontalAlignment="Left" Margin="10,102,0,0" VerticalAlignment="Top" ToolTip="If the files in a world backup directory exceeds this number, the oldest file will get deleted."/>
+        <TextBox x:Name="MaxWorldsInput" PreviewTextInput="MaxWorldsInput_OnPreviewTextInput" HorizontalAlignment="Left" Margin="94,106,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="31" Height="20"/>
+    </Grid>
+</Window>
