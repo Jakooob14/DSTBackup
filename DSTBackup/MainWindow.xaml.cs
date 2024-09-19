@@ -38,7 +38,7 @@ public partial class MainWindow : Window
         }
     }
 
-    readonly int _checkTime = 30;
+    readonly int _checkTime = 1;
     
     List<World?> _worlds = new List<World?>();
     World? _worldToBackup = null;
@@ -52,26 +52,34 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
+        Debugger.Launch();
+        
+
         config.Read();
         PathInput.Text = config.BackupPath;
         MaxWorldsInput.Text = config.MaxWorlds.ToString();
         
         string worldPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), @"Documents\Klei\DoNotStarveTogether");
+        Debug.WriteLine($"[{DateTime.Now}] Initialized | World Path: {worldPath}");
 
         string[] idFolders = Directory.GetDirectories(worldPath);
 
         foreach (string idFolderPath in idFolders)
         {
             if (idFolderPath.Contains("backup")) continue;
+            Debug.WriteLine($"[{DateTime.Now}] Foreach id | {idFolderPath}");
             
             string[] worldFolders = Directory.GetDirectories(idFolderPath + "\\CloudSaves");
             foreach (string worldFolderPath in worldFolders)
             {
+                Debug.WriteLine($"[{DateTime.Now}] Foreach world | {worldFolderPath}");
                 INIFile iniFile = new INIFile(worldFolderPath + @"\cluster.ini");
                 string world = iniFile.IniReadValue("NETWORK", "cluster_name");
                 if (world == "") continue;
+                world = Regex.Replace(world, "[^a-zA-Z0-9 ]", "");
                 WorldInput.Items.Add(world);
                 _worlds.Add(new World(world, worldFolderPath));
+                Debug.WriteLine($"[{DateTime.Now}] Added world {world} in {worldFolderPath}");
             }
         }
         
@@ -101,6 +109,7 @@ public partial class MainWindow : Window
                 try
                 {
                     _worldToBackup = _worlds.First(item => item.Name == WorldInput.Text);
+                    Debug.WriteLine("Clicked Start Backup | _worldToBackup: " + _worldToBackup.Path);
                 }
                 catch (Exception exception)
                 {
@@ -122,6 +131,7 @@ public partial class MainWindow : Window
                 config.MaxWorlds = Convert.ToInt32(MaxWorldsInput.Text);
                 Config.Write(config);
                 
+                Debug.WriteLine($"[{DateTime.Now}] Timer started | Backup Path: {config.BackupPath} | MaxWorlds: {config.MaxWorlds}");
                 timer.Start();
                 break;
             }
@@ -136,6 +146,7 @@ public partial class MainWindow : Window
 
                 _oldLastModified = DateTime.MinValue;
                 
+                Debug.WriteLine("Clicked Stop Backup and stopped Timer");
                 timer.Stop();
                 break;
             }
@@ -144,6 +155,7 @@ public partial class MainWindow : Window
 
     private void timer_Tick(object? sender, EventArgs e)
     {
+        Debug.WriteLine($"[{DateTime.Now}] Start tick | _worldToBackup: {_worldToBackup.Path}");
         if (_worldToBackup == null) return;
         FileInfo masterInfo = new FileInfo(_worldToBackup.Path + @"\Master.zip");
         FileInfo cavesInfo = new FileInfo(_worldToBackup.Path + @"\Caves.zip");
@@ -151,11 +163,17 @@ public partial class MainWindow : Window
         if (masterInfo.LastWriteTime > _oldLastModified)
         {
             _oldLastModified = masterInfo.LastWriteTime;
+            Debug.WriteLine($"[{DateTime.Now}] Master older");
         } else if (cavesInfo.LastWriteTime > _oldLastModified)
         {
             _oldLastModified = cavesInfo.LastWriteTime;
+            Debug.WriteLine($"[{DateTime.Now}] Caves older");
         }
-        else return;
+        else
+        {
+            Debug.WriteLine($"[{DateTime.Now}] Else triggered");
+            return;
+        }
 
         
         string idPattern = @"DoNotStarveTogether\\(\d+)\\CloudSaves";
@@ -163,24 +181,28 @@ public partial class MainWindow : Window
         
         Match idMatch = Regex.Match(_worldToBackup.Path, idPattern);
         Match worldMatch = Regex.Match(_worldToBackup.Path, worldPattern);
+        Debug.WriteLine($"[{DateTime.Now}] Regex start");
 
         if (worldMatch.Success && idMatch.Success)
         {
+            Debug.WriteLine($"[{DateTime.Now}] Regex match success");
             string idResult = idMatch.Groups[1].Value;
             string worldResult = worldMatch.Groups[1].Value;
             
             if(!Directory.Exists(config.BackupPath + "\\" + idResult + "\\" + _worldToBackup.Name)){
                 Directory.CreateDirectory(config.BackupPath + "\\" + idResult + "\\" + _worldToBackup.Name);
+                Debug.WriteLine($"[{DateTime.Now}] Created directory {config.BackupPath + "\\" + idResult + "\\" + _worldToBackup.Name}");
             }
-            
-            Console.WriteLine(config.BackupPath + "\\" + idResult + "\\" + _worldToBackup.Name + "\\" + worldResult);
+
             int fileCount = Directory.EnumerateFiles(config.BackupPath + "\\" + idResult + "\\" + _worldToBackup.Name).Count();
+            Debug.WriteLine($"[{DateTime.Now}] ! " + config.BackupPath + "\\" + idResult + "\\" + _worldToBackup.Name + "\\" + worldResult + " | File count " + fileCount);
             if (fileCount >= config.MaxWorlds)
             {
                 foreach (var fi in new DirectoryInfo(@config.BackupPath + "\\" + idResult + "\\" + _worldToBackup.Name).GetFiles().OrderByDescending(x => x.LastWriteTime).Skip(config.MaxWorlds - 1))
-                    fi.Delete();
+                    fi.Delete(); Debug.WriteLine($"[{DateTime.Now}] Deleted {config.BackupPath + "\\" + idResult + "\\" + _worldToBackup.Name}");
             }
             ZipFile.CreateFromDirectory(_worldToBackup.Path, config.BackupPath + "\\" + idResult + "\\" + _worldToBackup.Name + "\\" + worldResult + DateTime.Now.ToString(" yyyy-MM-dd hh_mm_ss") + ".zip");
+            Debug.WriteLine($"[{DateTime.Now}] Zipped folder");
         }
     }
 
