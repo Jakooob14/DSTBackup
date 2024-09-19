@@ -54,7 +54,6 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
-        MessageBox.Show("test277");
         try
         {
             config.Read();
