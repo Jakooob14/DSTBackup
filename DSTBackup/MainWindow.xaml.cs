@@ -39,8 +39,8 @@ public partial class MainWindow : Window
         }
     }
 
-    private readonly int _checkTime = 1;
-    private readonly string _id = "DST Backup";
+    private readonly int _checkTime = 5;
+    public static readonly string Id = "DST Backup";
     
     List<World?> _worlds = new List<World?>();
     World? _worldToBackup = null;
@@ -53,14 +53,15 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-
+        
         try
         {
             config.Read();
             PathInput.Text = config.BackupPath;
             MaxWorldsInput.Text = config.MaxWorlds.ToString();
-        
-            string worldPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), @"Documents\Klei\DoNotStarveTogether");
+
+            string worldPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                @"Documents\Klei\DoNotStarveTogether");
             Debugging.Log($"Initialized | World Path: {worldPath}");
 
             string[] idFolders = Directory.GetDirectories(worldPath);
@@ -69,7 +70,7 @@ public partial class MainWindow : Window
             {
                 if (idFolderPath.Contains("backup")) continue;
                 Debugging.Log($"Foreach id | {idFolderPath}");
-            
+
                 string[] worldFolders = Directory.GetDirectories(idFolderPath + "\\CloudSaves");
                 foreach (string worldFolderPath in worldFolders)
                 {
@@ -84,10 +85,20 @@ public partial class MainWindow : Window
                 }
             }
         }
+        catch (DirectoryNotFoundException)
+        {
+            if (MessageBox.Show("I see you dont have any worlds. If you want to run the demo window press yes.", Id,
+                    MessageBoxButton.YesNo, MessageBoxImage.Information) == MessageBoxResult.No) return;
+            
+            Debugging.Log("Opening Demo window");
+            Demo demoWindow = new Demo();
+            demoWindow.Show();
+            Close();
+        }
         catch (Exception exception)
         {
             Debugging.Log("Error at Initialize: " + exception, Debugging.LoggingType.Error);
-            MessageBox.Show("Error triggered! Look in the log file for more info.\n" + exception, _id, MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show("Error triggered! Look in the log file for more info.\n" + exception, Id, MessageBoxButton.OK, MessageBoxImage.Error);
         }
         
         timer.Interval = TimeSpan.FromSeconds(_checkTime);
@@ -164,7 +175,7 @@ public partial class MainWindow : Window
         catch (Exception exception)
         {
             Debugging.Log("Error at StartBackupButton_Click: " + exception, Debugging.LoggingType.Error);
-            MessageBox.Show("Error triggered! Look in the log file for more info.\n" + exception, _id, MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show("Error triggered! Look in the log file for more info.\n" + exception, Id, MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -235,7 +246,7 @@ public partial class MainWindow : Window
         catch (Exception exception)
         {
             Debugging.Log("Error at timer_Tick: " + exception, Debugging.LoggingType.Error);
-            MessageBox.Show("Error triggered! Look in the log file for more info.\n" + exception, _id, MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show("Error triggered! Look in the log file for more info.\n" + exception, Id, MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 

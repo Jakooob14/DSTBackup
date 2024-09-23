@@ -23,11 +23,11 @@ public static class Debugging
         File.Create(_file);
         Log("Started logging");
     }
-    
-    public static void Log(string message, LoggingType loggingType = LoggingType.Info)
+
+    public static void Log(string message, LoggingType loggingType = LoggingType.Info, string? additionalInfo = null)
     {
-        string prefix = $"[{DateTime.Now}] [{loggingType.ToString().ToUpper()}] ";
-        
+        string prefix = $"[{DateTime.Now}]{(additionalInfo != null ? $" [{additionalInfo}]" : null)} [{loggingType.ToString().ToUpper()}] ";
+
         Debug.WriteLine(prefix + message);
         File.AppendAllText(_file, prefix + message + "\n");
     }
